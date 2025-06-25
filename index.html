@@ -952,6 +952,17 @@
                 right: 1rem;
                 padding: 0.5rem;
             }
+
+            .emoji-float {
+                font-size: 1.5rem;
+            }
+
+            .emoji-float:nth-child(1) { top: -30px; left: -60px; }
+            .emoji-float:nth-child(2) { top: -20px; right: -50px; }
+            .emoji-float:nth-child(3) { top: 10px; left: -70px; }
+            .emoji-float:nth-child(4) { top: 20px; right: -60px; }
+            .emoji-float:nth-child(5) { bottom: -10px; left: -50px; }
+            .emoji-float:nth-child(6) { bottom: -20px; right: -40px; }
         }
 
         @media (max-width: 480px) {
@@ -971,6 +982,53 @@
             .sound-toggle {
                 bottom: 1rem;
                 left: 1rem;
+            }
+
+            .main-container {
+                padding: 1rem 0.5rem;
+            }
+
+            .title-section {
+                margin-bottom: 2rem;
+            }
+
+            .celebration-section {
+                margin-top: 2rem;
+            }
+
+            .games-section {
+                margin-top: 2rem;
+                gap: 1rem;
+            }
+
+            .game-card {
+                min-width: 250px;
+                padding: 1.5rem;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .custom-cursor {
+                display: none;
+            }
+
+            .cursor-trail {
+                display: none;
+            }
+
+            body {
+                cursor: auto;
+            }
+
+            .card-message:hover {
+                transform: none;
+                color: #4b5563;
+            }
+
+            .main-title:hover,
+            .name-title:hover {
+                transform: none;
             }
         }
     </style>
