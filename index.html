@@ -730,6 +730,60 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
+        /* Mobile audio overlay */
+        .audio-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+        }
+
+        .audio-overlay-content {
+            text-align: center;
+            color: white;
+            padding: 2rem;
+        }
+
+        .audio-overlay h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: var(--gradient-2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .audio-overlay p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .audio-start-btn {
+            background: var(--gradient-2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            padding: 1.5rem 3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.4);
+        }
+
+        .audio-start-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 107, 157, 0.5);
+        }
+
         /* Keyframe animations */
         @keyframes gradient-shift {
             0%, 100% { background-position: 0% 50%; }
@@ -910,12 +964,6 @@
             }
         }
 
-        @keyframes flash {
-            0% { opacity: 0; }
-            50% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-10px); }
@@ -952,17 +1000,6 @@
                 right: 1rem;
                 padding: 0.5rem;
             }
-
-            .emoji-float {
-                font-size: 1.5rem;
-            }
-
-            .emoji-float:nth-child(1) { top: -30px; left: -60px; }
-            .emoji-float:nth-child(2) { top: -20px; right: -50px; }
-            .emoji-float:nth-child(3) { top: 10px; left: -70px; }
-            .emoji-float:nth-child(4) { top: 20px; right: -60px; }
-            .emoji-float:nth-child(5) { bottom: -10px; left: -50px; }
-            .emoji-float:nth-child(6) { bottom: -20px; right: -40px; }
         }
 
         @media (max-width: 480px) {
@@ -983,57 +1020,21 @@
                 bottom: 1rem;
                 left: 1rem;
             }
-
-            .main-container {
-                padding: 1rem 0.5rem;
-            }
-
-            .title-section {
-                margin-bottom: 2rem;
-            }
-
-            .celebration-section {
-                margin-top: 2rem;
-            }
-
-            .games-section {
-                margin-top: 2rem;
-                gap: 1rem;
-            }
-
-            .game-card {
-                min-width: 250px;
-                padding: 1.5rem;
-            }
-        }
-
-        /* Touch device optimizations */
-        @media (hover: none) and (pointer: coarse) {
-            .custom-cursor {
-                display: none;
-            }
-
-            .cursor-trail {
-                display: none;
-            }
-
-            body {
-                cursor: auto;
-            }
-
-            .card-message:hover {
-                transform: none;
-                color: #4b5563;
-            }
-
-            .main-title:hover,
-            .name-title:hover {
-                transform: none;
-            }
         }
     </style>
 </head>
 <body>
+    <!-- Mobile audio overlay -->
+    <div class="audio-overlay" id="audioOverlay">
+        <div class="audio-overlay-content">
+            <h2>🎉 Happy Birthday Sneha! 🎉</h2>
+            <p>Tap to start the celebration with music!</p>
+            <button class="audio-start-btn" id="audioStartBtn">
+                🎵 Start Celebration 🎵
+            </button>
+        </div>
+    </div>
+
     <!-- Custom cursor -->
     <div class="custom-cursor" id="cursor"></div>
 
@@ -1198,7 +1199,8 @@
             soundEnabled: true,
             balloonGameActive: false,
             memoryGameActive: false,
-            wishes: []
+            wishes: [],
+            audioInitialized: false
         };
 
         // Audio context for Happy Birthday melody
@@ -1257,14 +1259,22 @@
         function initAudio() {
             try {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                gameState.audioInitialized = true;
+                return true;
             } catch (e) {
                 console.log('Audio not supported');
+                return false;
             }
         }
 
         // Play Happy Birthday melody
         async function playHappyBirthday() {
             if (!audioContext || !gameState.soundEnabled || isPlayingMelody) return;
+            
+            // Resume audio context if suspended
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+            }
             
             isPlayingMelody = true;
             let currentTime = audioContext.currentTime;
@@ -2085,21 +2095,6 @@
             setTimeout(() => createConfetti(150), 500);
             setTimeout(() => createConfetti(100), 1000);
             
-            // Screen flash
-            const flash = document.createElement('div');
-            flash.style.position = 'fixed';
-            flash.style.top = '0';
-            flash.style.left = '0';
-            flash.style.width = '100vw';
-            flash.style.height = '100vh';
-            flash.style.background = 'radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%)';
-            flash.style.pointerEvents = 'none';
-            flash.style.zIndex = '9998';
-            flash.style.animation = 'flash 0.5s ease-out';
-            
-            document.body.appendChild(flash);
-            setTimeout(() => flash.remove(), 500);
-            
             soundEffects.celebration();
         }
 
@@ -2123,21 +2118,44 @@
             }
         });
 
+        // Audio overlay handling
+        function setupAudioOverlay() {
+            const overlay = document.getElementById('audioOverlay');
+            const startBtn = document.getElementById('audioStartBtn');
+            
+            startBtn.addEventListener('click', async () => {
+                // Initialize audio
+                if (initAudio()) {
+                    // Resume audio context
+                    if (audioContext.state === 'suspended') {
+                        await audioContext.resume();
+                    }
+                    
+                    // Hide overlay
+                    overlay.style.display = 'none';
+                    
+                    // Start celebration
+                    setTimeout(() => {
+                        createConfetti(50);
+                        playHappyBirthday();
+                    }, 1000);
+                } else {
+                    // Audio not supported, hide overlay anyway
+                    overlay.style.display = 'none';
+                    createConfetti(50);
+                }
+            });
+        }
+
         // Initialize everything
         document.addEventListener('DOMContentLoaded', () => {
-            initAudio();
+            setupAudioOverlay();
             createParticles();
             createFloatingShapes();
             createSparkles();
             createBalloons();
             setupInteractions();
             updateScoreDisplay();
-            
-            // Initial confetti and melody after a delay
-            setTimeout(() => {
-                createConfetti(50);
-                playHappyBirthday();
-            }, 3000);
             
             // Auto-start memory game
             setTimeout(() => startMemoryGame(), 5000);
@@ -2154,13 +2172,6 @@
                 });
             }
         }, 10000);
-
-        // Enable audio context on first user interaction
-        document.addEventListener('click', () => {
-            if (audioContext && audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-        }, { once: true });
     </script>
 </body>
 </html>
